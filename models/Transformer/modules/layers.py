@@ -6,6 +6,24 @@ import math
 class MultiHeadAttention(nn.Module):
     def __init__(self, dim=768, num_heads=16, attn_drop=0.1):
         super(MultiHeadAttention, self).__init__()
+        self.dim = dim
+        self.num_heads = num_heads
+        self. head_dim = dim//num_heads
+        
+        # Linear layer Wq, Wk, Wv (N*N)
+        self.q_linear = nn.Linear(dim, dim)
+        self.k_linear = nn.Linear(dim, dim)
+        self.v_linear = nn.Linear(dim, dim)
+        
+        # Output layer
+        self.out_linear = nn.Linear(dim, dim)
+        
+        # Dropout layer
+        self.dropout = nn.Dropout(attn_drop)
+        
+        
+        
+        
 
     def forward(self, x):
         ''' Hint: input x tensor shape is (batch_size, num_image_tokens, dim), 
@@ -15,7 +33,28 @@ class MultiHeadAttention(nn.Module):
             Total d_k , d_v set to 768
             d_k , d_v for one head will be 768//16.
         '''
-        raise Exception('TODO1!')
+        batch_size, num_image_tokens, _ = x.shape()
+        
+        # Linear, get (batch_size, # tokens, dim)
+        Q = self.q_linear(x)
+        K = self.k_linear(x)
+        V = self.v_linear(x)
+        
+        # Reshape for multi-head, get (batch_size, # heads, # tokens, head_dim)
+        Q = Q.view(batch_size, num_image_tokens, self.num_heads, self.head_dim).transpose(1, 2)
+        K = K.view(batch_size, num_image_tokens, self.num_heads, self.head_dim).transpose(1, 2)        
+        V = V.view(batch_size, num_image_tokens, self.num_heads, self.head_dim).transpose(1, 2)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        # raise Exception('TODO1!')
+        
 
 class MLP(nn.Sequential):
     def __init__(self, dim=768, hidden_dim=3072, drop_rate=0.1):
