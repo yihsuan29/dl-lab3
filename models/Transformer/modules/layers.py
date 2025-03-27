@@ -8,7 +8,7 @@ class MultiHeadAttention(nn.Module):
         super(MultiHeadAttention, self).__init__()
         self.dim = dim
         self.num_heads = num_heads
-        self. head_dim = dim//num_heads
+        self.head_dim = dim//num_heads
         
         # Linear layer Wq, Wk, Wv (N*N)
         self.q_linear = nn.Linear(dim, dim)
@@ -33,26 +33,35 @@ class MultiHeadAttention(nn.Module):
             Total d_k , d_v set to 768
             d_k , d_v for one head will be 768//16.
         '''
-        batch_size, num_image_tokens, _ = x.shape()
+        batch_size, num_image_tokens, _ = x.shape
         
         # Linear, get (batch_size, # tokens, dim)
         Q = self.q_linear(x)
         K = self.k_linear(x)
         V = self.v_linear(x)
         
-        # Reshape for multi-head, get (batch_size, # heads, # tokens, head_dim)
-        Q = Q.view(batch_size, num_image_tokens, self.num_heads, self.head_dim).transpose(1, 2)
-        K = K.view(batch_size, num_image_tokens, self.num_heads, self.head_dim).transpose(1, 2)        
-        V = V.view(batch_size, num_image_tokens, self.num_heads, self.head_dim).transpose(1, 2)
+        # Reshape for multi-head, get (batch_size, # tokens, # heads, head_dim)
+        Q = Q.view(batch_size, num_image_tokens, self.num_heads, self.head_dim)
+        K = K.view(batch_size, num_image_tokens, self.num_heads, self.head_dim)
+        V = V.view(batch_size, num_image_tokens, self.num_heads, self.head_dim)
+           
+        # Reorder, so that compute independently for each head, get (batch_size, # heads, # tokens, head_dim)
+        Q = Q.transpose(1, 2)
+        K = K.transpose(1, 2)
+        V = V.transpose(1, 2)
         
+        # Attention = dropout(softmax(QK^T/(d_k)**0.5))V
+        A = torch.matmul(Q, K.transpose(-2,-1))/(self.head_dim**0.5)
+        A_hat = torch.nn.functional.softmax(A, dim =-1)
+        A_hat = self.dropout(A_hat)        
+        B = torch.matmul(A_hat, V)
         
+        # concat the output
+        B = B.transpose(1, 2).reshape(batch_size, num_image_tokens, self.dim)
+        output = self.out_linear(B)
         
-        
-        
-        
-        
-        
-        
+        return output            
+             
         # raise Exception('TODO1!')
         
 

@@ -1,5 +1,7 @@
 lab3_dataset/
 models/VQGAN/checkpoints/
+transformer_checkpoints/
+runs/
 Lab3 MaskGIT for Image Inpainting spec.pdf
 
 # Byte-compiled / optimized / DLL files

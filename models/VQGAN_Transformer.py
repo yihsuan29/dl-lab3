@@ -31,11 +31,12 @@ class MaskGit(nn.Module):
         model = model.eval()
         return model
     
-##TODO2 step1-1: input x fed to vqgan encoder to get the latent and zq
+##TODO2 step1-1: input x fed to vqgan encoder to get the latent and zq(codebook_mapping)
     @torch.no_grad()
     def encode_to_z(self, x):
-        raise Exception('TODO2 step1-1!')
-        return None
+        zq, codebook_indices, q_loss = self.vqgan.encode(x)
+        # raise Exception('TODO2 step1-1!')
+        return zq, codebook_indices
     
 ##TODO2 step1-2:    
     def gamma_func(self, mode="cosine"):
@@ -51,29 +52,46 @@ class MaskGit(nn.Module):
 
         """
         if mode == "linear":
-            raise Exception('TODO2 step1-2!')
-            return None
+            #raise Exception('TODO2 step1-2!')
+            return lambda ratio: 1 - ratio
         elif mode == "cosine":
-            raise Exception('TODO2 step1-2!')
-            return None
+            #raise Exception('TODO2 step1-2!')
+            return lambda ratio: math.cos(math.pi/2 * ratio)
         elif mode == "square":
-            raise Exception('TODO2 step1-2!')
-            return None
+            #raise Exception('TODO2 step1-2!')
+            return lambda ratio: 1 - ratio**2
         else:
             raise NotImplementedError
 
 ##TODO2 step1-3:            
     def forward(self, x):
+        # get ground truth, and reshape as (batch_size, num_img_tokens)
+        _, z_indices= self.encode_to_z(x) 
+        z_indices = z_indices.view(-1, self.num_image_tokens)
         
-        z_indices=None #ground truth
-        logits = None  #transformer predict the probability of tokens
-        raise Exception('TODO2 step1-3!')
+        # set the mask ratio at most 50%
+        mask_ratio = torch.rand(1)
+        mask_ratio = (mask_ratio * 0.5).item()
+        
+        # randomize the mask and set those < mask_ratio as masked 
+        mask = torch.rand_like(z_indices, dtype = float)
+        mask = mask < mask_ratio
+        
+        # since there are 0~1023 entries in codebook => the masked one = 1024
+        masked_z = torch.where(mask, 1024, z_indices)
+
+        #transformer predict the probability of tokens
+        logits = self.transformer(masked_z)
+                
+        #raise Exception('TODO2 step1-3!')
         return logits, z_indices
     
 ##TODO3 step1-1: define one iteration decoding   
     @torch.no_grad()
     def inpainting(self):
         raise Exception('TODO3 step1-1!')
+        
+        
         logits = self.transformer(None)
         #Apply softmax to convert logits into a probability distribution across the last dimension.
         logits = None
