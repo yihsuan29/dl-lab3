@@ -16,7 +16,7 @@ class MaskGit(nn.Module):
     
         self.num_image_tokens = configs['num_image_tokens']
         self.mask_token_id = configs['num_codebook_vectors']
-        self.choice_temperature = configs['choice_temperature']
+        self.choice_temperature = 0.3 #configs['choice_temperature']
         self.gamma = self.gamma_func(configs['gamma_type'])
         self.transformer = BidirectionalTransformer(configs['Transformer_param'])
 
