@@ -88,20 +88,20 @@ class MaskGit(nn.Module):
     
 ##TODO3 step1-1: define one iteration decoding   
     @torch.no_grad()
-    def inpainting(self):
-        raise Exception('TODO3 step1-1!')
+    def inpainting(self, mask, z_indices, ratio, mask_num):
+        # raise Exception('TODO3 step1-1!')
+        masked_z = torch.where(mask, 1024, z_indices)        
+        logits = self.transformer(masked_z)
         
-        
-        logits = self.transformer(None)
         #Apply softmax to convert logits into a probability distribution across the last dimension.
-        logits = None
+        logits = torch.nn.functional.softmax(logits, dim = -1).squeeze(0)
+        
 
         #FIND MAX probability for each token value
-        z_indices_predict_prob, z_indices_predict = None
+        z_indices_predict_prob, z_indices_predict = torch.max(logits, dim = -1)
 
-        ratio=None 
         #predicted probabilities add temperature annealing gumbel noise as confidence
-        g = None  # gumbel noise
+        g = -torch.empty_like(z_indices_predict_prob).exponential_().log()  # gumbel noise
         temperature = self.choice_temperature * (1 - ratio)
         confidence = z_indices_predict_prob + temperature * g
         
@@ -109,8 +109,13 @@ class MaskGit(nn.Module):
         #sort the confidence for the rank 
         #define how much the iteration remain predicted tokens by mask scheduling
         ##At the end of the decoding process, add back the original(non-masked) token values
+        confidence_new = torch.where(mask, confidence, float('inf'))
+        z_sort = torch.argsort(confidence_new, descending = False)
+        n = int(ratio * mask_num)
+        threshold = confidence_new[0, z_sort[0,n]]
         
-        mask_bc=None
+        z_indices_predict = torch.where(mask, z_indices_predict, z_indices)        
+        mask_bc=confidence_new < threshold
         return z_indices_predict, mask_bc
     
 __MODEL_TYPE__ = {
