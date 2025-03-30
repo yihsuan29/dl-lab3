@@ -64,7 +64,7 @@ class MaskGIT:
                     break
                 ratio = self.model.gamma(step/self.total_iter)
     
-                z_indices_predict, mask_bc = self.model.inpainting(mask_bc, z_indices_predict, ratio, mask_num)
+                z_indices_predict, mask_bc = self.model.inpainting(z_indices_predict, mask_bc, ratio, mask_num)
 
                 #static method yon can modify or not, make sure your visualization results are correct
                 mask_i=mask_bc.view(1, 16, 16)
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('--test-mask-path', type=str, default='./lab3_dataset/mask64', help='Path to testing mask dataset.')
     #MVTM parameter
     parser.add_argument('--sweet-spot', type=int, default=15, help='sweet spot: the best step in total iteration')
-    parser.add_argument('--total-iter', type=int, default=30, help='total step for mask scheduling')
+    parser.add_argument('--total-iter', type=int, default=15, help='total step for mask scheduling')
     parser.add_argument('--mask-func', type=str, default='cosine', help='mask scheduling function')
 
     args = parser.parse_args()

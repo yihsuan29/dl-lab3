@@ -82,7 +82,7 @@ class MaskGit(nn.Module):
     
 ##TODO3 step1-1: define one iteration decoding   
     @torch.no_grad()
-    def inpainting(self, mask, z_indices, ratio, mask_num):
+    def inpainting(self, z_indices, mask, ratio, mask_num):
         masked_z = torch.where(mask, 1024, z_indices)        
         logits = self.transformer(masked_z)
         
@@ -108,7 +108,7 @@ class MaskGit(nn.Module):
         
         z_indices_predict = torch.where(mask, z_indices_predict, z_indices)        
         mask_bc=confidence_new < threshold
-        return z_indices_predict, mask_bc
+        return z_indices_predict.squeeze(0), mask_bc
     
 __MODEL_TYPE__ = {
     "MaskGit": MaskGit
