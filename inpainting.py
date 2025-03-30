@@ -26,10 +26,10 @@ class MaskGIT:
 
     @staticmethod
     def prepare():
-        os.makedirs(f"{args.mask_func}", exist_ok=True)
-        os.makedirs(f"{args.mask_func}/test_results", exist_ok=True)
-        os.makedirs(f"{args.mask_func}/mask_scheduling", exist_ok=True)
-        os.makedirs(f"{args.mask_func}/imga", exist_ok=True)
+        os.makedirs(f"result/{args.mask_func}/{args.sweet_spot}", exist_ok=True)
+        os.makedirs(f"result/{args.mask_func}/{args.sweet_spot}/test_results", exist_ok=True)
+        os.makedirs(f"result/{args.mask_func}/{args.sweet_spot}/mask_scheduling", exist_ok=True)
+        os.makedirs(f"result/{args.mask_func}/{args.sweet_spot}/imga", exist_ok=True)
 
 ##TODO3 step1-1: total iteration decoding  
 #mask_b: iteration decoding initial mask, where mask_b is true means mask
@@ -56,8 +56,6 @@ class MaskGIT:
             mask_bc=mask_b
             mask_b=mask_b.to(device=self.device)
             mask_bc=mask_bc.to(device=self.device)
-            
-            #raise Exception('TODO3 step1-1!')
             ratio = 0
             #iterative decoding for loop design
             #Hint: it's better to save original mask and the updated mask by scheduling separately
@@ -82,11 +80,11 @@ class MaskGIT:
                 imga[step+1]=dec_img_ori #get decoded image
 
             ##decoded image of the sweet spot only, the test_results folder path will be the --predicted-path for fid score calculation
-            vutils.save_image(dec_img_ori, os.path.join(f"{self.mask_func}/test_results", f"image_{i:03d}.png"), nrow=1) 
+            vutils.save_image(dec_img_ori, os.path.join(f"result/{args.mask_func}/{args.sweet_spot}/test_results", f"image_{i:03d}.png"), nrow=1) 
 
             #demo score 
-            vutils.save_image(maska, os.path.join(f"{self.mask_func}/mask_scheduling", f"test_{i}.png"), nrow=10) 
-            vutils.save_image(imga, os.path.join(f"{self.mask_func}/imga", f"test_{i}.png"), nrow=7)
+            vutils.save_image(maska, os.path.join(f"result/{args.mask_func}/{args.sweet_spot}/mask_scheduling", f"test_{i}.png"), nrow=10) 
+            vutils.save_image(imga, os.path.join(f"result/{args.mask_func}/{args.sweet_spot}/imga", f"test_{i}.png"), nrow=7)
 
 
 
@@ -136,8 +134,8 @@ if __name__ == '__main__':
     parser.add_argument('--test-maskedimage-path', type=str, default='./lab3_dataset/masked_image', help='Path to testing image dataset.')
     parser.add_argument('--test-mask-path', type=str, default='./lab3_dataset/mask64', help='Path to testing mask dataset.')
     #MVTM parameter
-    parser.add_argument('--sweet-spot', type=int, default=5, help='sweet spot: the best step in total iteration')
-    parser.add_argument('--total-iter', type=int, default=15, help='total step for mask scheduling')
+    parser.add_argument('--sweet-spot', type=int, default=15, help='sweet spot: the best step in total iteration')
+    parser.add_argument('--total-iter', type=int, default=30, help='total step for mask scheduling')
     parser.add_argument('--mask-func', type=str, default='cosine', help='mask scheduling function')
 
     args = parser.parse_args()

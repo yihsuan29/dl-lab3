@@ -35,7 +35,6 @@ class MaskGit(nn.Module):
     @torch.no_grad()
     def encode_to_z(self, x):
         zq, codebook_indices, q_loss = self.vqgan.encode(x)
-        # raise Exception('TODO2 step1-1!')
         return zq, codebook_indices
     
 ##TODO2 step1-2:    
@@ -52,13 +51,10 @@ class MaskGit(nn.Module):
 
         """
         if mode == "linear":
-            #raise Exception('TODO2 step1-2!')
             return lambda ratio: 1 - ratio
         elif mode == "cosine":
-            #raise Exception('TODO2 step1-2!')
             return lambda ratio: math.cos(math.pi/2 * ratio)
         elif mode == "square":
-            #raise Exception('TODO2 step1-2!')
             return lambda ratio: 1 - ratio**2
         else:
             raise NotImplementedError
@@ -82,20 +78,16 @@ class MaskGit(nn.Module):
 
         #transformer predict the probability of tokens
         logits = self.transformer(masked_z)
-                
-        #raise Exception('TODO2 step1-3!')
         return logits, z_indices
     
 ##TODO3 step1-1: define one iteration decoding   
     @torch.no_grad()
     def inpainting(self, mask, z_indices, ratio, mask_num):
-        # raise Exception('TODO3 step1-1!')
         masked_z = torch.where(mask, 1024, z_indices)        
         logits = self.transformer(masked_z)
         
         #Apply softmax to convert logits into a probability distribution across the last dimension.
-        logits = torch.nn.functional.softmax(logits, dim = -1).squeeze(0)
-        
+        logits = torch.nn.functional.softmax(logits, dim = -1).squeeze(0)        
 
         #FIND MAX probability for each token value
         z_indices_predict_prob, z_indices_predict = torch.max(logits, dim = -1)

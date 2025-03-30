@@ -61,8 +61,6 @@ class MultiHeadAttention(nn.Module):
         output = self.out_linear(B)
         
         return output            
-             
-        # raise Exception('TODO1!')
         
 
 class MLP(nn.Sequential):
